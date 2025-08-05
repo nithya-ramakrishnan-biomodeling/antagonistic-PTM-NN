@@ -273,6 +273,11 @@ def run_sim(sim_id, seed=42,
     np.random.seed(seed)
     torch.manual_seed(seed)
 
+    # Select device: GPU if available, else CPU
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if verbose_level > 0:
+        print(f"Using device: {device}")
+
     # Naming the simulation based on the sim_id, loss and alpha beta.
     # avoiding '.' in the name by using '_'
     sim_name = f'{sim_id}'
@@ -308,10 +313,15 @@ def run_sim(sim_id, seed=42,
         daughter_A[i], daughter_B[i] = split_sequence(corrupted_daughter_sequences[i])
         daughter_input[i] = np.append(daughter_A[i], daughter_B[i])
 
-    mom_A = torch.from_numpy(mom_A).float()
-    daughter_input = torch.from_numpy(daughter_input).float()
+    # Convert numpy arrays to PyTorch tensors and move to device
+    mom_A = torch.from_numpy(mom_A).float().to(device)
+    daughter_input = torch.from_numpy(daughter_input).float().to(device)
 
-    model = SequencePredictor(input_size, hidden_size, output_size, num_layers)
+    # Print tensor device info for debugging
+    print(f"mom_A device: {mom_A.device}")
+    print(f"daughter_input device: {daughter_input.device}")
+
+    model = SequencePredictor(input_size, hidden_size, output_size, num_layers).to(device)
 
     # Define the loss function and optimizer
     if loss_function_type == 'MSE':
@@ -370,8 +380,13 @@ def run_sim(sim_id, seed=42,
         daughter_A[i], daughter_B[i] = split_sequence(corrupted_daughter_sequences[i])
         daughter_input[i] = np.append(daughter_A[i], daughter_B[i])
 
-    daughter_A = torch.from_numpy(daughter_A).float()
-    daughter_input = torch.from_numpy(daughter_input).float()
+    # Convert numpy arrays to PyTorch tensors and move to device
+    daughter_A = torch.from_numpy(daughter_A).float().to(device)
+    daughter_input = torch.from_numpy(daughter_input).float().to(device)
+
+    # Print tensor device info for debugging (test data)
+    print(f"daughter_A (test) device: {daughter_A.device}")
+    print(f"daughter_input (test) device: {daughter_input.device}")
 
     # Test the models
     model.eval()
@@ -379,7 +394,8 @@ def run_sim(sim_id, seed=42,
     with torch.no_grad():
         test_output = model(daughter_input)
 
-    model_predicted_sequences = test_output.round().numpy().astype(int)
+    # Move predictions back to CPU for numpy conversion
+    model_predicted_sequences = test_output.round().cpu().numpy().astype(int)
     for i, seq in enumerate(model_predicted_sequences):
         test_data.corrected_daughter_list[i] = seq
 
