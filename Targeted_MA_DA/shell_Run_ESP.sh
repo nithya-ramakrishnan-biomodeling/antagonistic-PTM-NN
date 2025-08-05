@@ -2,6 +2,7 @@
 alphas=(0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9)
 betas="[0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]"
 
+
 start_time=$(date +%s)
 
 trap "echo 'Interrupted. Killing background jobs...'; jobs -p | xargs -r kill; exit 1" SIGINT
@@ -21,7 +22,7 @@ for alpha in "${alphas[@]}"; do
     --output_size 100 \
     --num_layers 5 \
     --learning_rate 0.001 \
-    --num_epochs 10 \
+    --num_epochs 10000 \
     --batch_size 100000 \
     --loss_function_type MSE \
     --verbose_level 2 \
