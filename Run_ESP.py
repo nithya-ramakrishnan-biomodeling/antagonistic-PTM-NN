@@ -57,6 +57,8 @@ sim_id = batch_name
 
 a_list = eval(alpha_eval)
 b_list = eval(beta_eval)
+print(f"Alpha List = {a_list}")
+print(f"Beta List = {b_list}")
 
 with open(f'{batch_name}_BitError_Combinations.csv', 'w') as f:
     f.write('Alpha,Beta,BitError\n')
@@ -64,6 +66,7 @@ with open(f'{batch_name}_BitError_Combinations.csv', 'w') as f:
 for a in a_list:
     for b in b_list:
         sim_start = time.time()
+        print(f"Running simulation with alpha = {round(a, 1)} and beta = {round(b, 1)}")
         sim_name, biterror = run_sim(sim_id=sim_id, seed=seed, alpha=round(a, 1), beta=round(b, 1), rho=rho,
                                      n_samples=n_samples, n_samples_test=n_samples_test, seq_length=seq_length,
                                      input_size=input_size, hidden_size=hidden_size, output_size=output_size,

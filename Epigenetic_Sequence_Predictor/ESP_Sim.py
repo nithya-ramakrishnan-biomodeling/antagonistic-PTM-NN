@@ -160,7 +160,7 @@ class SequencePredictor(nn.Module):
         self.input_layer = nn.Linear(input_size, hidden_size)
 
         # These are the hidden layers
-        self.hidden_layers = [nn.Linear(hidden_size, hidden_size) for _ in range(self.num_hid_layers)]
+        self.hidden_layers = nn.ModuleList([nn.Linear(hidden_size, hidden_size) for _ in range(self.num_hid_layers)])
 
         # This is the output layer
         self.output_layer = nn.Linear(hidden_size, output_size)
@@ -223,6 +223,8 @@ def run_sim(sim_id, seed=42,
         print("Epigenetic Sequence Predictor")
         print(f"Sim Name :: {sim_name}")
         print()
+    if verbose_level > 1:
+        print("Starting data preparation...")
 
     # Prepare the data
     data = Dataframe(alpha, beta, rho, n_samples, seq_length)
@@ -230,12 +232,33 @@ def run_sim(sim_id, seed=42,
     mother_sequences = data.mom_list
     corrupted_daughter_sequences = data.corrupt_daughter_list
 
-    # Convert the numpy arrays to PyTorch tensors
-    mother_sequences = torch.from_numpy(mother_sequences).float()
-    corrupted_daughter_sequences = torch.from_numpy(corrupted_daughter_sequences).float()
+    if verbose_level > 1:
+        print("Data preparation finished.")
+        print("Converting data to PyTorch tensors...")
 
-    # Create the model
-    model = SequencePredictor(input_size, hidden_size, output_size, num_layers)
+    # Select device: GPU if available, else CPU
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if verbose_level > 0:
+        print(f"Using device: {device}")
+
+    # Convert the numpy arrays to PyTorch tensors and move to device
+    mother_sequences = torch.from_numpy(mother_sequences).float().to(device)
+    corrupted_daughter_sequences = torch.from_numpy(corrupted_daughter_sequences).float().to(device)
+
+    # Print tensor device info for debugging
+    print(f"mother_sequences device: {mother_sequences.device}")
+    print(f"corrupted_daughter_sequences device: {corrupted_daughter_sequences.device}")
+
+    if verbose_level > 1:
+        print("Tensor conversion finished.")
+        print("Creating model...")
+
+    # Create the model and move to device
+    model = SequencePredictor(input_size, hidden_size, output_size, num_layers).to(device)
+
+    if verbose_level > 1:
+        print("Model created.")
+        print("Setting up loss function and optimizer...")
 
     # Define the loss function and optimizer
     if loss_function_type == 'MSE':
@@ -248,6 +271,10 @@ def run_sim(sim_id, seed=42,
         exit()
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+
+    if verbose_level > 1:
+        print("Loss function and optimizer set.")
+        print("Starting training...")
 
     # Create an empty 2D NumPy array to store the epoch and loss values
     training_loss = np.empty((num_epochs, 2))
@@ -287,16 +314,33 @@ def run_sim(sim_id, seed=42,
     mother_sequences = test_data.mom_list
     corrupted_daughter_sequences = test_data.corrupt_daughter_list
 
-    # Convert the numpy arrays to PyTorch tensors
-    mother_sequences = torch.from_numpy(mother_sequences).float()
-    corrupted_daughter_sequences = torch.from_numpy(corrupted_daughter_sequences).float()
+    if verbose_level > 1:
+        print("Test data preparation finished.")
+        print("Converting test data to PyTorch tensors...")
+
+    # Convert the numpy arrays to PyTorch tensors and move to device
+    mother_sequences = torch.from_numpy(mother_sequences).float().to(device)
+    corrupted_daughter_sequences = torch.from_numpy(corrupted_daughter_sequences).float().to(device)
+
+    # Print tensor device info for debugging (test data)
+    print(f"mother_sequences for Testing device: {mother_sequences.device}")
+    print(f"corrupted_daughter_sequences for Testing device: {corrupted_daughter_sequences.device}")
+
+    if verbose_level > 1:
+        print("Test tensor conversion finished.")
+        print("Running model on test data...")
 
     # Test the model
     model.eval()
     with torch.no_grad():
         test_output = model(corrupted_daughter_sequences)
 
-    predicted_sequences = test_output.round().numpy().astype(int)
+    if verbose_level > 1:
+        print("Test predictions finished.")
+        print("Processing predictions and saving results...")
+
+    # Move predictions back to CPU for numpy conversion
+    predicted_sequences = test_output.round().cpu().numpy().astype(int)
     for i, seq in enumerate(predicted_sequences):
         test_data.corrected_daughter_list[i] = seq
 
