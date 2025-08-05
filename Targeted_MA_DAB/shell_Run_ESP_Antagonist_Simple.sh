@@ -16,15 +16,15 @@ for alpha in "${alphas[@]}"; do
         --mu ${mu} \
         --seed 42 \
         --seq_length 100 \
-        --n_samples 100 \
+        --n_samples 100000 \
         --n_samples_test 30000 \
         --input_size 200 \
         --hidden_size 150 \
         --output_size 100 \
         --num_layers 5 \
         --learning_rate 0.001 \
-        --num_epochs 10 \
-        --batch_size 100 \
+        --num_epochs 10000 \
+        --batch_size 100000 \
         --loss_function_type MSE \
         --verbose_level 2 \
         --visualise_nn False &
