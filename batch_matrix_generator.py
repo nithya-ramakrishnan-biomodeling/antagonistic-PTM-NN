@@ -16,7 +16,7 @@ def plot_heatmap(batch_name, annotate=False, grid=False, common_scale=False, ext
     matrix = data.pivot_table(values='BitError', index='Beta', columns='Alpha')
 
     # Save the matrix to a new CSV file
-    matrix.to_csv(f'{batch_name}_BitError_matrix.csv', index_label=['Beta\Alpha'])
+    matrix.to_csv(f'{batch_name}_BitError_matrix.csv', index_label=[r'Beta\Alpha'])
 
     # Set font globally to Arial
     rcParams['font.family'] = 'sans-serif'
