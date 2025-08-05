@@ -221,8 +221,8 @@ class SequencePredictor(nn.Module):
         # This is the first layer which takes in inputs and gives out the outputs for the first hidden layer
         self.input_layer = nn.Linear(input_size, hidden_size)
 
-        # These are the hidden layers
-        self.hidden_layers = [nn.Linear(hidden_size, hidden_size) for _ in range(self.num_hid_layers)]
+        # These are the hidden layers (use ModuleList for proper registration)
+        self.hidden_layers = nn.ModuleList([nn.Linear(hidden_size, hidden_size) for _ in range(self.num_hid_layers)])
 
         # This is the output layer
         self.output_layer = nn.Linear(hidden_size, output_size)
@@ -235,7 +235,6 @@ class SequencePredictor(nn.Module):
         for layer in self.hidden_layers:
             out = layer(out)
             out = self.relu(out)
-
         out = self.output_layer(out)
         return out
 
@@ -283,11 +282,8 @@ def run_sim(sim_id, seed=42,
         print("Epigenetic Sequence Predictor")
         print(f"Sim Name :: {sim_name}")
         print()
-
-    #############################################################################################################
-    # Prepare the data for the network
-    if verbose_level > 0:
-        print("Training the Initial Network")
+    if verbose_level > 1:
+        print("Starting data preparation...")
 
     data = Dataframe(alpha, beta, mu, rho, n_samples, seq_length)
 
@@ -305,11 +301,31 @@ def run_sim(sim_id, seed=42,
         daughter_A[i], daughter_B[i] = split_sequence(corrupted_daughter_sequences[i])
         daughter_input[i] = np.append(daughter_A[i], daughter_B[i])
 
-    mom_A = torch.from_numpy(mom_A).float()
-    daughter_input = torch.from_numpy(daughter_input).float()
+    # Select device: GPU if available, else CPU
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if verbose_level > 0:
+        print(f"Using device: {device}")
 
-    # Create the model
-    model = SequencePredictor(input_size, hidden_size, output_size, num_layers)
+    # Move tensors to device
+    mom_A = torch.from_numpy(mom_A).float().to(device)
+    daughter_input = torch.from_numpy(daughter_input).float().to(device)
+
+    # Print tensor device info for debugging
+    print(f"mom_A device: {mom_A.device}")
+    print(f"daughter_input device: {daughter_input.device}")
+
+    if verbose_level > 1:
+        print("Data preparation finished.")
+        print("Converting data to PyTorch tensors...")
+        print("Tensor conversion finished.")
+        print("Creating model...")
+
+    # Create the model and move to device
+    model = SequencePredictor(input_size, hidden_size, output_size, num_layers).to(device)
+
+    if verbose_level > 1:
+        print("Model created.")
+        print("Setting up loss function and optimizer...")
 
     # Define the loss function and optimizer
     if loss_function_type == 'MSE':
@@ -322,6 +338,10 @@ def run_sim(sim_id, seed=42,
         exit()
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+
+    if verbose_level > 1:
+        print("Loss function and optimizer set.")
+        print("Starting training...")
 
     # Create an empty 2D NumPy array to store the epoch and loss values
     training_loss = np.empty((num_epochs, 2))
@@ -347,18 +367,9 @@ def run_sim(sim_id, seed=42,
             if (epoch + 1) % 10 == 0:
                 print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item():.4f}')
 
-        # if visualise_nn:
-        #     # Visualize the computation graph
-        #     inputs = daughter_A[:1]  # Take the first sequence for visualization
-        #
-        #     make_dot(model(inputs), params=dict(model.named_parameters())).render(f'{sim_name}/nn_graph', format='png')
-        #
-        #     make_dot(model(inputs), params=dict(model.named_parameters()), show_attrs=True).render(
-        #         f'{sim_name}/nn_graph_with_attr', format='png')
-        #
-        #     make_dot(model(inputs), params=dict(model.named_parameters()), show_attrs=True, show_saved=True).render(
-        #         f'{sim_name}/nn_graph_with_attr_saved', format='png')
-
+    if verbose_level > 1:
+        print("Training finished.")
+        print("Preparing test data...")
 
     # Test the model.
     test_data = Dataframe(alpha, beta, mu, rho, n_samples_test, seq_length)
@@ -377,16 +388,31 @@ def run_sim(sim_id, seed=42,
         daughter_A[i], daughter_B[i] = split_sequence(corrupted_daughter_sequences[i])
         daughter_input[i] = np.append(daughter_A[i], daughter_B[i])
 
-    daughter_A = torch.from_numpy(daughter_A).float()
-    daughter_input = torch.from_numpy(daughter_input).float()
+    if verbose_level > 1:
+        print("Test data preparation finished.")
+        print("Converting test data to PyTorch tensors...")
+        print("Test tensor conversion finished.")
+        print("Running model on test data...")
+
+    # Move test tensors to device
+    daughter_A = torch.from_numpy(daughter_A).float().to(device)
+    daughter_input = torch.from_numpy(daughter_input).float().to(device)
+
+    # Print tensor device info for debugging (test data)
+    print(f"daughter_A (test) device: {daughter_A.device}")
+    print(f"daughter_input (test) device: {daughter_input.device}")
 
     # Test the models
     model.eval()
-
     with torch.no_grad():
         test_output = model(daughter_input)
 
-    model_predicted_sequences = test_output.round().numpy().astype(int)
+    if verbose_level > 1:
+        print("Test predictions finished.")
+        print("Processing predictions and saving results...")
+
+    # Move predictions back to CPU for numpy conversion
+    model_predicted_sequences = test_output.round().cpu().numpy().astype(int)
     for i, seq in enumerate(model_predicted_sequences):
         test_data.corrected_daughter_list[i] = seq
 
@@ -443,5 +469,7 @@ def run_sim(sim_id, seed=42,
 
         f.write(f'##OUTPUTS##\n')
         f.write(f'Average BitError(Initial_Network) = {np.mean(test_data.biterror)}')
+
+    print("Simulation complete.")
 
     return sim_name, np.mean(test_data.biterror)

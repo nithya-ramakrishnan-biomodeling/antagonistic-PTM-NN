@@ -1,2 +1,4 @@
 # Ignore Python bytecode files
 __pycache__/
+Speed_Tests/
+create_venv.sh

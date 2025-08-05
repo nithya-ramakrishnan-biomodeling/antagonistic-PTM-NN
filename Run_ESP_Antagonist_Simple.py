@@ -1,25 +1,7 @@
 import time
 import argparse
 import numpy as np
-import multiprocessing
 from Epigenetic_Sequence_Predictor.ESP_Sim_Antagonist_SimpleNN import run_sim
-
-
-# Function to run a single simulation
-def run_single_sim(params):
-    sim_id, seed, a, b, mu, rho, n_samples, n_samples_test, seq_length, input_size, hidden_size, output_size, num_layers, learning_rate, num_epochs, batch_size, loss_function_type, verbose_level, visualise_nn = params
-
-    sim_start = time.time()
-    sim_name, biterror = run_sim(sim_id=sim_id, seed=seed, alpha=round(a, 1), beta=round(b, 1), mu=mu, rho=rho,
-                                 n_samples=n_samples, n_samples_test=n_samples_test, seq_length=seq_length,
-                                 input_size=input_size, hidden_size=hidden_size, output_size=output_size,
-                                 num_layers=num_layers, learning_rate=learning_rate, num_epochs=num_epochs,
-                                 batch_size=batch_size, loss_function_type=loss_function_type,
-                                 verbose_level=verbose_level, visualise_nn=visualise_nn)
-    sim_end = time.time()
-
-    result = (round(a, 1), round(b, 1), biterror, sim_name, sim_end - sim_start)
-    return result
 
 
 # Parse command-line arguments
@@ -74,25 +56,31 @@ sim_id = batch_name
 a_list = eval(alpha_eval)
 b_list = eval(beta_eval)
 
-# Prepare the list of parameters for each simulation
-params_list = [(
-    sim_id, seed, a, b, mu, rho, n_samples, n_samples_test, seq_length, input_size, hidden_size, output_size,
-    num_layers, learning_rate, num_epochs, batch_size, loss_function_type, verbose_level, visualise_nn)
-    for a in a_list for b in b_list]
+print(f"Alpha List = {a_list}")
+print(f"Beta List = {b_list}")
 
-# Use multiprocessing Pool to run simulations in parallel
 with open(f'{batch_name}_BitError_Combinations.csv', 'w') as f:
     f.write('Alpha,Beta,BitError\n')
 
-with multiprocessing.Pool() as pool:
-    results = pool.map(run_single_sim, params_list)
+for a in a_list:
+    for b in b_list:
+        sim_start = time.time()
+        print(f"Running simulation with alpha = {round(a, 1)} and beta = {round(b, 1)}")
+        sim_name, biterror = run_sim(
+            sim_id=sim_id, seed=seed, alpha=round(a, 1), beta=round(b, 1), mu=mu, rho=rho,
+            n_samples=n_samples, n_samples_test=n_samples_test, seq_length=seq_length,
+            input_size=input_size, hidden_size=hidden_size, output_size=output_size,
+            num_layers=num_layers, learning_rate=learning_rate, num_epochs=num_epochs,
+            batch_size=batch_size, loss_function_type=loss_function_type,
+            verbose_level=verbose_level, visualise_nn=visualise_nn
+        )
+        sim_end = time.time()
+        print(f"Simulation Name = {sim_name}", end=' --- ')
+        print(f"Sim Execution Time = {round(sim_end - sim_start, 4)}", end=' --- ')
+        print(f"BitError = {biterror}")
 
-# Write results to the CSV file
-with open(f'{batch_name}_BitError_Combinations.csv', 'a') as f:
-    for result in results:
-        a, b, biterror, sim_name, sim_time = result
-        print(f"Simulation Name = {sim_name} --- Sim Execution Time = {round(sim_time, 4)} --- BitError = {biterror}")
-        f.write(f'{a},{b},{biterror}\n')
+        with open(f'{batch_name}_BitError_Combinations.csv', 'a') as f:
+            f.write(f'{round(a, 1)},{round(b, 1)},{biterror}\n')
 
 full_end = time.time()
 print(f"Total Execution time = {full_end - full_start}")
@@ -120,3 +108,4 @@ with open(f'{batch_name}_Batch_Log.txt', 'w') as f:
     f.write(f'batch_size = {batch_size}\n')
     f.write(f'loss_function_type = {loss_function_type}\n')
     f.write(f'verbose_level = {verbose_level}\n')
+    f.write(f'visualise_nn = {visualise_nn}\n')
