@@ -1,8 +1,8 @@
 import time
 
 
-run_type = 'Extended'
-# run_type = 'Simple'
+# run_type = 'Extended'
+run_type = 'Simple'
 if run_type == 'Extended':
     from Epigenetic_Sequence_Predictor.alpha_beta_mu_predictor_Extended_NN import run_sim
     input_size = 100

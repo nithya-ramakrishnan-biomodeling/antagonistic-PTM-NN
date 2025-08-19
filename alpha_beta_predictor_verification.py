@@ -115,6 +115,6 @@ def plot_and_save_data(folder_path):
         plt.close()
 
 # Usage example
-batch_name = 'Results_and_Outputs/Prediction_Tests/Prediction_Test'
+batch_name = 'Prediction_Test_Simple'
 # batch_name = 'Prediction_Tests/Prediction_Test_Extended'
 plot_and_save_data(batch_name)
