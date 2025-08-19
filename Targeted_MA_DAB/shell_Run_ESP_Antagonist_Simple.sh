@@ -1,6 +1,6 @@
 # To Recreate the figure 3.2 in the paper, run this script.
-alphas=(0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9)
-betas="[0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]"
+alphas=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9)
+betas="[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]"
 mu=0.5  # Set mu as needed
 
 start_time=$(date +%s)
