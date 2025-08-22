@@ -9,7 +9,7 @@ trap "echo 'Interrupted. Killing background jobs...'; jobs -p | xargs -r kill; e
 for gamma in "${gamma[@]}"; do
     for alpha in "${alphas[@]}"; do
         batch_name="Targeted_NonAnta_MA_DAB_g${gamma}_a${alpha}"
-        python3 ../Run_ESP_NonAntagonist_Simple.py \
+        python3 -u ../Run_ESP_NonAntagonist_Simple.py \
             --batch_name "${batch_name}" \
             --alpha_eval "[${alpha}]" \
             --beta_eval "${betas}" \

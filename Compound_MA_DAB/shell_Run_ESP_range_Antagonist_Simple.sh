@@ -3,7 +3,7 @@ start_time=$(date +%s)
 
 trap "echo 'Interrupted. Killing background jobs...'; jobs -p | xargs -r kill; exit 1" SIGINT
 
-python3 ../Run_ESP_range_Antagonist_Simple.py 
+python3 -u ../Run_ESP_range_Antagonist_Simple.py
 
 wait
 
