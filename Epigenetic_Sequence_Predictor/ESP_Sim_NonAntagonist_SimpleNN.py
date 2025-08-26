@@ -102,6 +102,9 @@ def split_sequence(seq):
         if seq[i] == 2:
             seq_A[i] = 0
             seq_B[i] = 1
+        if seq[i] == 3:
+            seq_A[i] = 1
+            seq_B[i] = 1
 
     return seq_A, seq_B
 
@@ -129,6 +132,11 @@ def generate_daughter(mom, rho):
                 daughter_sequence[i] = 0
             else:
                 daughter_sequence[i] = 2
+        elif daughter_sequence[i] == 3:
+            if np.random.random() <= rho:
+                daughter_sequence[i] = 0
+            else:
+                daughter_sequence[i] = 3
 
     return daughter_sequence
 
