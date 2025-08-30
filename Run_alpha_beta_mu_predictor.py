@@ -1,17 +1,10 @@
 import time
 
 
-# run_type = 'Extended'
-run_type = 'Simple'
-if run_type == 'Extended':
-    from Epigenetic_Sequence_Predictor.alpha_beta_mu_predictor_Extended_NN import run_sim
-    input_size = 100
-    epochs = 5000
-else:
-    from Epigenetic_Sequence_Predictor.alpha_beta_mu_predictor_NN import run_sim
-    input_size = 200
-    epochs = 10000
-batch_name = f'Prediction_Test_{run_type}'
+from Epigenetic_Sequence_Predictor.alpha_beta_mu_predictor_NN import run_sim
+input_size = 200
+epochs = 10000
+batch_name = f'Prediction_Test_Simple'
 
 sim_start = time.time()
 sim_name, alpha_error, beta_error, mu_error = run_sim(sim_id=batch_name, seed=42,
