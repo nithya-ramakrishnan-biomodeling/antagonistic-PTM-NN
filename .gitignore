@@ -5,3 +5,4 @@ create_venv.sh
 
 Compound_alpha_beta_mu_MAB/Prediction_Test_Simple/
 Compound_MA_DAB/Range_Test_Simple/
+Compound_MA_DAB/Range_Test_Simple_heatmap/
