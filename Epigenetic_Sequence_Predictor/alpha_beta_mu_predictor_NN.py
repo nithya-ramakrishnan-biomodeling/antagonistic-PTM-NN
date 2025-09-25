@@ -185,7 +185,7 @@ class ParamPredictor(nn.Module):
         self.input_layer = nn.Linear(input_size, hidden_size)
 
         # These are the hidden layers
-        self.hidden_layers = [nn.Linear(hidden_size, hidden_size) for _ in range(self.num_hid_layers)]
+        self.hidden_layers = nn.ModuleList([nn.Linear(hidden_size, hidden_size) for _ in range(self.num_hid_layers)])
 
         # This is the output layer
         self.output_layer = nn.Linear(hidden_size, output_size)
