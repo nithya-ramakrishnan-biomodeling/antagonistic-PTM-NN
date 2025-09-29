@@ -351,6 +351,13 @@ def run_sim(sim_id, seed=42,
     # Get conclusions
     test_data.conclusions(sim_name, level=verbose_level)
 
+    # Save the network weights
+    torch.save(model.state_dict(), f'{sim_name}/network_weights.pth')
+
+    # when needed load these weights as follows.
+    # Assuming you've defined your model class as `SequencePredictor` and created an instance named `model`
+    # model.load_state_dict(torch.load('path/to/network_weights.pth'))
+
     np.savetxt(sim_name + '/training_loss.csv', training_loss, delimiter=',')
 
     with open(sim_name + '/log.txt', 'w') as f:
