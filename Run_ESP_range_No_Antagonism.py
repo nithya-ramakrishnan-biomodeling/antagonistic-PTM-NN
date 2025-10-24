@@ -1,7 +1,7 @@
 import time
 from Epigenetic_Sequence_Predictor.ESP_Sim_No_Antagonism_Range import run_sim
 
-batch_name = 'Range_Test_NonAnta'
+batch_name = 'Range_Test_No_Anta'
 
 sim_start = time.time()
 sim_name, initial_biterror = run_sim(sim_id=batch_name, seed=42,
