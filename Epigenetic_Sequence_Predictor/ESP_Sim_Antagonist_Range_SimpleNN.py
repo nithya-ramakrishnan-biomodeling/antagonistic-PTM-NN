@@ -425,7 +425,7 @@ def run_sim(sim_id, seed=42,
         f.write(f'#Sample parameters#\n')
         f.write(f'alpha = {alpha_min}, {alpha_max}\n')
         f.write(f'beta = {beta_min}, {beta_max}\n')
-        f.write(f'mu = {mu_min}, {beta_max}\n')
+        f.write(f'mu = {mu_min}, {mu_max}\n')
         f.write(f'rho = {rho}\n')
         f.write(f'seq_length = {seq_length}\n')
         f.write(f'Training n_samples = {n_samples}\n')
