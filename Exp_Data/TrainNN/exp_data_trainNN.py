@@ -358,7 +358,7 @@ if __name__ == "__main__":
     criterion = nn.MSELoss()
 
     learning_rate = 0.001
-    num_epochs = 100
+    num_epochs = 10000
     batch_size = len(train_sequences)
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
