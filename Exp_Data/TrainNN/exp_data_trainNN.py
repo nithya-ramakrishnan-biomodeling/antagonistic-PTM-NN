@@ -328,8 +328,8 @@ if __name__ == "__main__":
         print("All sequences with alpha, beta, and corrupt daughter sequences saved.")
     
     print(all_sequences.head())
-    # just keep 1000 sequences for testing the code
-    # all_sequences = all_sequences[:1000]
+    # just keep 100000 sequences for testing the code
+    all_sequences = all_sequences.sample(n=100000, random_state=42)
     
     # Divide into train and test sets
     train_sequences = all_sequences.sample(frac=0.8, random_state=42)
